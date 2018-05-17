@@ -1,0 +1,186 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <vector>
+#include <stack>
+
+using namespace std;
+
+void readFile(vector<string> &);
+void checkSyntax(vector<string> &);
+void errorFunc(char, int);
+
+int main() {
+
+	vector<string> linesOfCode;
+	
+
+	//string linesOfCode[MAX_FILESIZE];
+	//int sizeOfVector = linesOfCode.size();
+
+	readFile(linesOfCode);
+
+	for (int i = 0; i < linesOfCode.size(); i++) {
+		cout << i+1 << ". " << linesOfCode[i] << endl;
+	}
+
+	checkSyntax(linesOfCode);
+
+	system("pause");
+}
+
+void readFile(vector<string> &strArray) {
+	ifstream infile;
+	infile.open("data.txt");
+	try {
+		if (!infile)
+			throw 99;
+	}
+	catch (int x) {
+		cout << "File cannot be read because no file found! ERROR EXCEPTION: " << x << endl;
+	}
+
+	string str;
+	while (getline(infile, str)) {
+		if (str.size() > 0)
+			strArray.push_back(str);
+	}
+}
+
+
+
+
+
+void checkSyntax(vector<string> &strArray) {
+	stack<char> st;
+	stack<char> sqt;
+	stack<int> numSt;
+	int errorNum;
+	int counter = 0;
+	char c;
+	while (counter < strArray.size()) {
+		for (int i = 0; i < strArray[counter].size(); ++i) {
+			
+			c = (strArray[counter])[i];
+			//cout << c << endl;
+			switch (c) { //switch statment that checks all the characters
+			case '[':
+				st.push(c);
+				numSt.push(counter);
+				break;
+			case '{':
+				st.push(c);
+				numSt.push(counter);
+				break;
+			case '(':
+				st.push(c);
+				numSt.push(counter);
+				break;
+			/*case '<':
+				if ((strArray[counter])[i + 1] == '<' || (strArray[counter])[i - 1] == '<') break;
+				st.push(c);
+				numSt.push(counter);
+				break;*/
+			case '\'': // checks for '
+				if (sqt.empty()) {
+					sqt.push(c);
+					numSt.push(counter);
+					break;
+				}
+				if (sqt.top() == '\'') {
+					cout << "Matching pair found: " << sqt.top() << " and " << c << endl;
+					sqt.pop();
+					numSt.pop();
+					break;
+				}else
+				sqt.push(c);
+				numSt.push(counter);
+				break;
+			case '\"': // checks for "
+				if (sqt.empty()) {
+					sqt.push(c);
+					numSt.push(counter);
+					break;
+				}
+				if (sqt.top() == '\"') {
+					cout << "Matching pair found: " << sqt.top() << " and " << c << endl;
+					sqt.pop();
+					numSt.pop();
+					break;
+				}
+				else
+				sqt.push(c);
+				numSt.push(counter);
+				break;
+			case ']':
+				if (st.top() == '[') {
+					cout << "Matching pair found: " << st.top() << " and " << c << endl;
+					st.pop();
+					numSt.pop();
+					break;
+				}
+				else {
+					//get the top num for counter here.
+					errorNum = numSt.top() + 1;
+					errorFunc(c, errorNum);
+					break;
+				}
+				break;
+			case '}':
+				if (st.top() == '{') {
+					cout << "Matching pair found: " << st.top() << " and " << c << endl;
+					st.pop();
+					numSt.pop();
+					break;
+				}
+				else {
+					errorNum = numSt.top() + 1;
+					errorFunc(c, errorNum);
+					break;
+				}
+				break;
+			case ')':
+				if (st.top() == '(') {
+					cout << "Matching pair found: " << st.top() << " and " << c << endl;
+					st.pop();
+					numSt.pop();
+					break;
+				}
+				else {
+					errorNum = numSt.top() + 1;
+					errorFunc(c, errorNum);
+					break;
+				}
+				break;
+			/*case '>':
+				if (st.top() == '<') {
+					cout << "Matching pair found: " << st.top() << " and " << c << endl;
+					st.pop();
+					numSt.pop();
+					break;
+				}
+				else {
+					errorFunc();
+					break;
+				}
+				break;*/
+			default:
+				break;
+			}
+		}
+		counter++;
+	}
+	if (!st.empty()) {
+		errorNum = numSt.top() + 1;
+		errorFunc(st.top(), errorNum);
+	}
+
+	if (numSt.empty()) {
+		cout << "numST is empty!" << endl;
+	}
+}
+
+void errorFunc(char chr, int loc) {
+	//to be implemented
+	cout << "Unmatched symbol: " << chr << " on line: " << loc << endl;
+}
